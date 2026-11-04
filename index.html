@@ -69,30 +69,21 @@ button:active { transform: scale(.96); }
 <body>
 
 <h1>🌸 さくらの計算機 🌸</h1>
-<p>花びらを集めて花を咲かせよう</p>
 
 <div class="problem">7 ＋ 4</div>
 
 <div class="garden">
   <div class="flower">
-    <svg id="A" viewBox="0 0 100 100"></svg>
-    <div class="name">A</div>
-    <div class="count" id="Ac">5枚</div>
+    <svg id="B" viewBox="0 0 100 100"></svg>
   </div>
   <div class="flower">
-    <svg id="B" viewBox="0 0 100 100"></svg>
-    <div class="name">B</div>
-    <div class="count" id="Bc">2枚</div>
+    <svg id="A" viewBox="0 0 100 100"></svg>
   </div>
   <div class="flower">
     <svg id="C" viewBox="0 0 100 100"></svg>
-    <div class="name">C</div>
-    <div class="count" id="Cc">4枚</div>
   </div>
   <div class="flower">
     <svg id="D" viewBox="0 0 100 100"></svg>
-    <div class="name">D</div>
-    <div class="count" id="Dc">0枚</div>
   </div>
 </div>
 
@@ -181,9 +172,6 @@ function draw(name) {
     c.setAttribute('class','center');
     svg.appendChild(c);
   }
-
-  document.getElementById(name+'c').textContent =
-    flowers[name].length+'枚';
 }
 
 function render() {
