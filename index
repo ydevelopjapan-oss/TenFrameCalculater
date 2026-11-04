@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>さくらの計算機</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px 12px;
+  background: #fff7fb;
+  color: #654b59;
+  font-family: sans-serif;
+  text-align: center;
+}
+h1 { color: #d878a0; font-size: 25px; }
+.problem { font-size: 38px; font-weight: bold; margin: 20px; }
+.garden {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 3px;
+  max-width: 480px;
+  margin: auto;
+}
+.flower { width: 100%; max-width: 100px; }
+.name { font-weight: bold; }
+.count { font-size: 13px; color: #b18b9e; }
+svg { width: 100%; overflow: visible; }
+.petal { fill: #f5a5c2; stroke: #dc7a9f; stroke-width: 1.5; }
+.center { fill: #ffe08a; }
+.controls { margin: 22px auto; }
+input {
+  width: 110px; height: 52px;
+  border: 2px solid #efbfd2;
+  border-radius: 14px;
+  font-size: 25px; text-align: center;
+}
+button {
+  border: 0; border-radius: 12px;
+  background: #df86a9; color: white;
+  font-size: 19px; font-weight: bold;
+  padding: 12px 22px;
+}
+button:active { transform: scale(.96); }
+.keys {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 8px; max-width: 260px; margin: 15px auto;
+}
+.keys button {
+  background: white; color: #765466;
+  border: 1px solid #efd3df;
+}
+#status { min-height: 45px; margin: 18px; }
+#result {
+  display: none; padding: 15px;
+  background: #eff9ed; border-radius: 18px;
+  max-width: 300px; margin: auto;
+}
+#tree {
+  font-size: 90px;
+  animation: appear .8s cubic-bezier(.2,1.5,.5,1);
+}
+@keyframes appear {
+  from { transform: scale(.2); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<h1>🌸 さくらの計算機 🌸</h1>
+<p>花びらを集めて花を咲かせよう</p>
+
+<div class="problem">7 ＋ 4</div>
+
+<div class="garden">
+  <div class="flower">
+    <svg id="A" viewBox="0 0 100 100"></svg>
+    <div class="name">A</div>
+    <div class="count" id="Ac">5枚</div>
+  </div>
+  <div class="flower">
+    <svg id="B" viewBox="0 0 100 100"></svg>
+    <div class="name">B</div>
+    <div class="count" id="Bc">2枚</div>
+  </div>
+  <div class="flower">
+    <svg id="C" viewBox="0 0 100 100"></svg>
+    <div class="name">C</div>
+    <div class="count" id="Cc">4枚</div>
+  </div>
+  <div class="flower">
+    <svg id="D" viewBox="0 0 100 100"></svg>
+    <div class="name">D</div>
+    <div class="count" id="Dc">0枚</div>
+  </div>
+</div>
+
+<div class="controls">
+  <input id="answer" inputmode="numeric" placeholder="答え">
+  <button id="equal">＝</button>
+</div>
+
+<div class="keys">
+  <button onclick="key('1')">1</button>
+  <button onclick="key('2')">2</button>
+  <button onclick="key('3')">3</button>
+  <button onclick="key('4')">4</button>
+  <button onclick="key('5')">5</button>
+  <button onclick="key('6')">6</button>
+  <button onclick="key('7')">7</button>
+  <button onclick="key('8')">8</button>
+  <button onclick="key('9')">9</button>
+  <button onclick="clearAnswer()">消</button>
+  <button onclick="key('0')">0</button>
+  <button onclick="backspace()">⌫</button>
+</div>
+
+<div id="status">答えを考えてみよう！</div>
+
+<div id="result">
+  <div id="tree">🌸🌳🌸</div>
+  <h2>7 ＋ 4 ＝ 11</h2>
+  <p>2つの花が完成したよ！</p>
+</div>
+
+<script>
+const angles = [72,144,216,288,0];
+
+let flowers = {
+  A:[1,2,3,4,5],
+  B:[1,2],
+  C:[1,2,3,4],
+  D:[]
+};
+
+let finished = false;
+
+function point(n) {
+  const rad = angles[n-1] * Math.PI / 180;
+  return [
+    50 + Math.sin(rad)*23,
+    50 - Math.cos(rad)*23
+  ];
+}
+
+function draw(name) {
+  const svg = document.getElementById(name);
+  svg.innerHTML = '';
+
+  const stem = document.createElementNS(
+    'http://www.w3.org/2000/svg','path'
+  );
+  stem.setAttribute('d','M50 78 L50 96');
+  stem.setAttribute('stroke','#91bd8d');
+  stem.setAttribute('stroke-width','4');
+  svg.appendChild(stem);
+
+  flowers[name].forEach(n => {
+    const [x,y] = point(n);
+    const p = document.createElementNS(
+      'http://www.w3.org/2000/svg','ellipse'
+    );
+    p.setAttribute('cx',x);
+    p.setAttribute('cy',y);
+    p.setAttribute('rx',8);
+    p.setAttribute('ry',14);
+    p.setAttribute('transform',
+      `rotate(${angles[n-1]} ${x} ${y})`);
+    p.setAttribute('class','petal');
+    svg.appendChild(p);
+  });
+
+  if(flowers[name].length === 5) {
+    const c = document.createElementNS(
+      'http://www.w3.org/2000/svg','circle'
+    );
+    c.setAttribute('cx',50);
+    c.setAttribute('cy',50);
+    c.setAttribute('r',7);
+    c.setAttribute('class','center');
+    svg.appendChild(c);
+  }
+
+  document.getElementById(name+'c').textContent =
+    flowers[name].length+'枚';
+}
+
+function render() {
+  ['A','B','C','D'].forEach(draw);
+}
+render();
+
+function key(n) {
+  if(finished) return;
+  const input = document.getElementById('answer');
+  input.value = (input.value+n).slice(0,2);
+}
+function clearAnswer() {
+  document.getElementById('answer').value='';
+}
+function backspace() {
+  const input = document.getElementById('answer');
+  input.value=input.value.slice(0,-1);
+}
+
+document.getElementById('equal').onclick = function() {
+  if(finished) return;
+
+  const answer = document.getElementById('answer').value;
+  const status = document.getElementById('status');
+
+  if(answer !== '') {
+    if(Number(answer) === 11) {
+      finished = true;
+      status.textContent='正解！すごい！';
+      showResult();
+    } else {
+      status.textContent='もう一度考えてみよう！';
+    }
+    return;
+  }
+
+  status.textContent='花びらが集まるよ…';
+  this.disabled=true;
+
+  setTimeout(animation,2000);
+};
+
+function animation() {
+  const status = document.getElementById('status');
+
+  // BにCの3枚を移動する
+  // C1はそのまま残す
+  const source = document.getElementById('C');
+  const target = document.getElementById('B');
+
+  const moving = [2,3,4];
+
+  moving.forEach((slot,index) => {
+    const [sx,sy] = point(slot);
+    const [tx,ty] = point(3+index);
+
+    const petal = [...source.querySelectorAll('.petal')]
+      .find(p => Math.abs(
+        Number(p.getAttribute('cx'))-sx
+      ) < 0.1 && Math.abs(
+        Number(p.getAttribute('cy'))-sy
+      ) < 0.1);
+
+    if(!petal) return;
+
+    const from = source.getBoundingClientRect();
+    const to = target.getBoundingClientRect();
+
+    const dx = to.left + to.width*tx/100 -
+               (from.left + from.width*sx/100);
+    const dy = to.top + to.height*ty/100 -
+               (from.top + from.height*sy/100);
+
+    petal.animate([
+      {transform:'translate(0,0) scale(1)'},
+      {transform:`translate(${dx}px,${dy}px) scale(1.2)`},
+      {transform:'translate(0,0) scale(1)'}
+    ],{
+      duration:1200,
+      easing:'ease-in-out'
+    });
+  });
+
+  setTimeout(() => {
+    flowers.B=[1,2,3,4,5];
+    flowers.C=[1];
+    render();
+
+    status.textContent='2つの花が完成！';
+    finished=true;
+    showResult();
+  },1350);
+}
+
+function showResult() {
+  document.getElementById('result').style.display='block';
+  document.getElementById('tree').style.animation='appear .8s cubic-bezier(.2,1.5,.5,1)';
+  document.getElementById('equal').disabled=true;
+}
+</script>
+</body>
+</html>
