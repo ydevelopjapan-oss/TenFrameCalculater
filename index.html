@@ -74,7 +74,7 @@ button:active { transform: scale(.96); }
 
 #tree {
   position: absolute;
-  left: 25%;
+  left: 12.5%;
   top: 0;
   width: 25%;
   height: 100%;
@@ -292,11 +292,97 @@ function animation() {
   },1350);
 }
 
+
 function showResult() {
-  document.getElementById('result').style.display='block';
-  document.getElementById('tree').style.animation='appear .8s cubic-bezier(.2,1.5,.5,1)';
-  document.getElementById('equal').disabled=true;
+  const tree = document.getElementById('tree');
+
+  // 木のイラストを挿入
+  tree.innerHTML = `
+    <svg viewBox="0 0 160 160">
+
+      <!-- 幹 -->
+      <path d="M75 145 Q68 105 78 65"
+        stroke="#936b4d"
+        stroke-width="16"
+        fill="none"
+        stroke-linecap="round"/>
+
+      <!-- 腕・枝 -->
+      <path d="M75 105 L35 72 M76 95 L120 65"
+        stroke="#936b4d"
+        stroke-width="9"
+        fill="none"
+        stroke-linecap="round"/>
+
+      <!-- 頭の枝 -->
+      <path d="M78 82 L78 48"
+        stroke="#936b4d"
+        stroke-width="7"
+        fill="none"
+        stroke-linecap="round"/>
+
+      <!-- 桜の花 -->
+      <g fill="#f5a5c2"
+        stroke="#df7fa5"
+        stroke-width="1.5">
+        <circle cx="35" cy="57" r="22"/>
+        <circle cx="68" cy="27" r="25"/>
+        <circle cx="104" cy="40" r="24"/>
+        <circle cx="126" cy="68" r="20"/>
+        <circle cx="50" cy="88" r="20"/>
+      </g>
+
+      <!-- ギョロ目 -->
+      <g>
+        <path d="M78 49 Q65 35 55 47
+          M78 49 Q92 35 103 47"
+          stroke="#936b4d"
+          stroke-width="5"
+          fill="none"/>
+
+        <ellipse cx="55" cy="45"
+          rx="12" ry="15"
+          fill="white"
+          stroke="#594653"
+          stroke-width="2"/>
+
+        <ellipse cx="103" cy="45"
+          rx="12" ry="15"
+          fill="white"
+          stroke="#594653"
+          stroke-width="2"/>
+
+        <circle cx="59" cy="49" r="5" fill="black"/>
+        <circle cx="99" cy="49" r="5" fill="black"/>
+      </g>
+
+      <!-- 口 -->
+      <path d="M68 115 Q78 125 88 115"
+        stroke="#594653"
+        stroke-width="3"
+        fill="none"
+        stroke-linecap="round"/>
+
+    </svg>
+  `;
+
+  // 木が中央にポンッと誕生
+  const svg = tree.querySelector('svg');
+
+  svg.animate([
+    { transform: 'scale(0.1)', opacity: 0 },
+    { transform: 'scale(1.15)', opacity: 1 },
+    { transform: 'scale(1)', opacity: 1 }
+  ], {
+    duration: 800,
+    easing: 'cubic-bezier(.2,1.5,.5,1)',
+    fill: 'forwards'
+  });
+
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('equal').disabled = true;
 }
+
 </script>
 </body>
 </html>
