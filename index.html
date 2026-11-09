@@ -64,6 +64,28 @@ button:active { transform: scale(.96); }
   from { transform: scale(.2); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+.garden {
+  position: relative;
+}
+
+#tree {
+  position: absolute;
+  left: 25%;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#tree svg {
+  width: 100%;
+  max-width: 180px;
+  animation: appear .8s cubic-bezier(.2,1.5,.5,1);
+}
 </style>
 </head>
 <body>
@@ -85,6 +107,7 @@ button:active { transform: scale(.96); }
   <div class="flower">
     <svg id="D" viewBox="0 0 100 100"></svg>
   </div>
+  <div id="tree"></div>
 </div>
 
 <div class="controls">
@@ -110,7 +133,6 @@ button:active { transform: scale(.96); }
 <div id="status">答えを考えてみよう！</div>
 
 <div id="result">
-  <div id="tree">🌸🌳🌸</div>
   <h2>7 ＋ 4 ＝ 11</h2>
   <p>2つの花が完成したよ！</p>
 </div>
