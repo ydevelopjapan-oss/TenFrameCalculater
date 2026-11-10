@@ -164,14 +164,6 @@ function draw(name) {
   const svg = document.getElementById(name);
   svg.innerHTML = '';
 
-  const stem = document.createElementNS(
-    'http://www.w3.org/2000/svg','path'
-  );
-  stem.setAttribute('d','M50 78 L50 96');
-  stem.setAttribute('stroke','#91bd8d');
-  stem.setAttribute('stroke-width','4');
-  svg.appendChild(stem);
-
   flowers[name].forEach(n => {
     const [x,y] = point(n);
     const p = document.createElementNS(
