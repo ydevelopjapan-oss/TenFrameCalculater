@@ -74,7 +74,7 @@ button:active { transform: scale(.96); }
 
 #tree {
   position: absolute;
-  left: 12.5%;
+  left: 37.5%;
   top: 0;
   width: 25%;
   height: 100%;
@@ -233,57 +233,8 @@ document.getElementById('equal').onclick = function() {
 };
 
 function animation() {
-  const status = document.getElementById('status');
-
-  // BにCの3枚を移動する
-  // C1はそのまま残す
-  const source = document.getElementById('C');
-  const target = document.getElementById('B');
-
-  const moving = [2,3,4];
-
-  moving.forEach((slot,index) => {
-    const [sx,sy] = point(slot);
-    const [tx,ty] = point(3+index);
-
-    const petal = [...source.querySelectorAll('.petal')]
-      .find(p => Math.abs(
-        Number(p.getAttribute('cx'))-sx
-      ) < 0.1 && Math.abs(
-        Number(p.getAttribute('cy'))-sy
-      ) < 0.1);
-
-    if(!petal) return;
-
-    const from = source.getBoundingClientRect();
-    const to = target.getBoundingClientRect();
-
-    const dx = to.left + to.width*tx/100 -
-               (from.left + from.width*sx/100);
-    const dy = to.top + to.height*ty/100 -
-               (from.top + from.height*sy/100);
-
-    petal.animate([
-      {transform:'translate(0,0) scale(1)'},
-      {transform:`translate(${dx}px,${dy}px) scale(1.2)`},
-      {transform:'translate(0,0) scale(1)'}
-    ],{
-      duration:1200,
-      easing:'ease-in-out'
-    });
-  });
-
-  setTimeout(() => {
-    flowers.B=[1,2,3,4,5];
-    flowers.C=[1];
-    render();
-
-    status.textContent='2つの花が完成！';
-    finished=true;
-    showResult();
-  },1350);
+  showResult();
 }
-
 
 function showResult() {
   const tree = document.getElementById('tree');
