@@ -217,10 +217,10 @@ document.getElementById('equal').onclick = function() {
   const status = document.getElementById('status');
 
   if(answer !== '') {
-    if(Number(answer) === 11) {
+    if(Number(answer) === 13) {
       finished = true;
       status.textContent='正解！すごい！';
-      showResult();
+      showResult49();
     } else {
       status.textContent='もう一度考えてみよう！';
     }
@@ -233,18 +233,17 @@ document.getElementById('equal').onclick = function() {
   setTimeout(animation,2000);
 };
 
-function animation() {
+// 5＋6用：花全体を移動する関数
+function animation56() {
   const moving = document.getElementById('C');
   const target = document.getElementById('B');
 
-  // CとBの画面上の位置を取得
   const from = moving.getBoundingClientRect();
   const to = target.getBoundingClientRect();
 
   const dx = to.left - from.left;
   const dy = to.top - from.top;
 
-  // Cの花を、そのままBへ移動
   const move = moving.animate([
     { transform: 'translate(0px, 0px)' },
     { transform: `translate(${dx}px, ${dy}px)` }
@@ -255,12 +254,11 @@ function animation() {
   });
 
   move.onfinish = function() {
-    completeTransfer();
+    completeTransfer56();
   };
 }
 
-// 花の移動が完了した状態にする
-function completeTransfer() {
+function completeTransfer56() {
   flowers.B = [1,2,3,4,5];
   flowers.C = [];
 
@@ -268,6 +266,97 @@ function completeTransfer() {
   showResult();
 }
 
+
+// 4＋9用：花びら1枚を移動する関数
+function animation() {
+  const sourceSvg = document.getElementById('A');
+  const targetSvg = document.getElementById('D');
+
+  // Aの288°の花びら（番号4）
+  const sourcePetal =
+    sourceSvg.querySelector('[data-petal="4"]');
+
+  if (!sourcePetal) {
+    completeTransfer49();
+    return;
+  }
+
+  // 移動元の画面上の位置
+  const rect = sourcePetal.getBoundingClientRect();
+
+  // Dの0°（番号5）の位置
+  const targetPoint = targetSvg.createSVGPoint();
+  targetPoint.x = 50;
+  targetPoint.y = 27;
+
+  const destination =
+    targetPoint.matrixTransform(targetSvg.getScreenCTM());
+
+  const scale =
+    targetSvg.getBoundingClientRect().width / 100;
+
+  const w = 17 * scale;
+  const h = 29 * scale;
+
+  const startX = rect.left + rect.width / 2 - w / 2;
+  const startY = rect.top + rect.height / 2 - h / 2;
+
+  const endX = destination.x - w / 2;
+  const endY = destination.y - h / 2;
+
+  // 移動する花びらの複製を作る
+  const flying = document.createElement('div');
+
+  flying.style.position = 'fixed';
+  flying.style.left = `${startX}px`;
+  flying.style.top = `${startY}px`;
+  flying.style.width = `${w}px`;
+  flying.style.height = `${h}px`;
+  flying.style.borderRadius = '50%';
+  flying.style.background = '#f5a5c2';
+  flying.style.border = '1.5px solid #dc7a9f';
+  flying.style.transform = 'rotate(288deg)';
+  flying.style.transformOrigin = 'center';
+  flying.style.pointerEvents = 'none';
+  flying.style.zIndex = '9999';
+
+  document.body.appendChild(flying);
+
+  // 元の花びらは一時的に隠す
+  sourcePetal.style.opacity = '0';
+
+  const move = flying.animate([
+    {
+      left: `${startX}px`,
+      top: `${startY}px`,
+      transform: 'rotate(288deg)'
+    },
+    {
+      left: `${endX}px`,
+      top: `${endY}px`,
+      transform: 'rotate(360deg)'
+    }
+  ], {
+    duration: 1000,
+    easing: 'ease-in-out',
+    fill: 'forwards'
+  });
+
+  move.onfinish = function() {
+    flying.remove();
+    completeTransfer49();
+  };
+}
+
+
+// 4＋9の移動完了後の状態
+function completeTransfer49() {
+  flowers.A = flowers.A.filter(n => n !== 4);
+  flowers.D = [...flowers.D, 5];
+
+  render();
+  showResult();
+}
 function showResult() {
   const tree = document.getElementById('tree');
 
