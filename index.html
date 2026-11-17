@@ -74,7 +74,7 @@ button:active { transform: scale(.96); }
 
 #tree {
   position: absolute;
-  left: 37.5%;
+  left: 12.5%;
   top: 0;
   width: 25%;
   height: 100%;
@@ -95,7 +95,7 @@ button:active { transform: scale(.96); }
 
 <h1>🌸 さくらの計算機 🌸</h1>
 
-<div class="problem">7 ＋ 4</div>
+<div class="problem">5 ＋ 6</div>
 
 <div class="garden">
   <div class="flower">
@@ -136,7 +136,7 @@ button:active { transform: scale(.96); }
 <div id="status">答えを考えてみよう！</div>
 
 <div id="result">
-  <h2>7 ＋ 4 ＝ 11</h2>
+  <h2>5 ＋ 6 ＝ 11</h2>
   <p>2つの花が完成したよ！</p>
 </div>
 
@@ -233,6 +233,37 @@ document.getElementById('equal').onclick = function() {
 };
 
 function animation() {
+  const moving = document.getElementById('C');
+  const target = document.getElementById('B');
+
+  // CとBの画面上の位置を取得
+  const from = moving.getBoundingClientRect();
+  const to = target.getBoundingClientRect();
+
+  const dx = to.left - from.left;
+  const dy = to.top - from.top;
+
+  // Cの花を、そのままBへ移動
+  const move = moving.animate([
+    { transform: 'translate(0px, 0px)' },
+    { transform: `translate(${dx}px, ${dy}px)` }
+  ], {
+    duration: 1100,
+    easing: 'ease-in-out',
+    fill: 'forwards'
+  });
+
+  move.onfinish = function() {
+    completeTransfer();
+  };
+}
+
+// 花の移動が完了した状態にする
+function completeTransfer() {
+  flowers.B = [1,2,3,4,5];
+  flowers.C = [];
+
+  render();
   showResult();
 }
 
