@@ -15,13 +15,6 @@ body {
 }
 h1 { color: #d878a0; font-size: 25px; }
 .problem { font-size: 38px; font-weight: bold; margin: 20px; }
-.garden {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 3px;
-  max-width: 480px;
-  margin: auto;
-}
 .flower { width: 100%; max-width: 100px; }
 .name { font-weight: bold; }
 .count { font-size: 13px; color: #b18b9e; }
@@ -65,26 +58,49 @@ button:active { transform: scale(.96); }
   to { transform: scale(1); opacity: 1; }
 }
 .garden {
-  position: relative;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  align-items: stretch;
+}
+
+.bed {
+  position: relative;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
-  gap: 2px;
+  gap: 4px;
+  padding: 8px 4px;
+  background: #fff0f5;
+  border-radius: 18px;
+}
+
+.flower {
+  width: 100%;
+  min-width: 0;
+  max-width: 100px;
+  aspect-ratio: 1;
+}
+
+.flower svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 #tree {
   position: absolute;
-  left: 62.5%;
-  top: 0;
-  width: 25%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  left: 50%;
+  top: 50%;
+  width: 42%;
+  transform: translate(-50%, -50%);
   pointer-events: none;
-  z-index: 5;
+  z-index: 2;
 }
-
 #tree svg {
   width: 100%;
   max-width: 110px;
@@ -98,19 +114,31 @@ button:active { transform: scale(.96); }
 <div class="problem">4 ＋ 9</div>
 
 <div class="garden">
-  <div class="flower">
-    <svg id="B" viewBox="0 0 100 100"></svg>
+
+  <!-- 左の花壇：B・A -->
+  <div class="bed bed-left">
+    <div class="flower">
+      <svg id="B" viewBox="0 0 100 100"></svg>
+    </div>
+
+    <div class="flower">
+      <svg id="A" viewBox="0 0 100 100"></svg>
+    </div>
+
+    <div id="tree"></div>
   </div>
-  <div class="flower">
-    <svg id="A" viewBox="0 0 100 100"></svg>
+
+  <!-- 右の花壇：D・C -->
+  <div class="bed bed-right">
+    <div class="flower">
+      <svg id="D" viewBox="0 0 100 100"></svg>
+    </div>
+
+    <div class="flower">
+      <svg id="C" viewBox="0 0 100 100"></svg>
+    </div>
   </div>
-  <div class="flower">
-    <svg id="D" viewBox="0 0 100 100"></svg>
-  </div>
-  <div class="flower">
-    <svg id="C" viewBox="0 0 100 100"></svg>
-  </div>
-  <div id="tree"></div>
+
 </div>
 
 <div class="controls">
