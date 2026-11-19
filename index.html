@@ -302,6 +302,76 @@ function chooseTransferPlan() {
   return candidates[index];
 }
 
+function createTransferSelection(plan) {
+  if (!plan) return null;
+
+  // 移動元の花の順番（画面の左から右）
+  const sourceNames =
+    plan.from === 'right' ? ['D', 'C'] : ['B', 'A'];
+
+  let remaining = plan.moveCount;
+
+  // 丸ごと移動する花
+  const wholeFlowers = [];
+
+  // 花びらだけ移動する場合の一覧
+  const petals = {};
+
+  // 指定した花から、番号の大きい順に花びらを選ぶ
+  function takePetals(name, count) {
+    const selected = flowers[name].slice(-count);
+
+    if (selected.length > 0) {
+      petals[name] = selected;
+      remaining -= selected.length;
+    }
+  }
+
+  // 5枚以上なら、完成した花を優先して丸ごと移動
+  if (plan.moveCount >= 5) {
+    for (const name of sourceNames) {
+      if (remaining >= 5 && flowers[name].length === 5) {
+        wholeFlowers.push(name);
+        remaining -= 5;
+      }
+    }
+  }
+
+  // まず不完全な花から花びらを取る
+  for (const name of sourceNames) {
+    if (remaining <= 0) break;
+
+    if (
+      flowers[name].length > 0 &&
+      flowers[name].length < 5 &&
+      !wholeFlowers.includes(name)
+    ) {
+      takePetals(
+        name,
+        Math.min(remaining, flowers[name].length)
+      );
+    }
+  }
+
+  // 足りなければ完成した花も分解する
+  for (const name of sourceNames) {
+    if (remaining <= 0) break;
+
+    if (
+      flowers[name].length === 5 &&
+      !wholeFlowers.includes(name)
+    ) {
+      takePetals(name, Math.min(remaining, 5));
+    }
+  }
+
+  return {
+    ...plan,
+    wholeFlowers,
+    petals
+  };
+}
+
 
 function key(n) {
   if(finished) return;
