@@ -225,6 +225,84 @@ function render() {
 }
 render();
 
+
+// 左右の花壇の花びらの合計を調べる
+function getGardenCounts() {
+  return {
+    left: flowers.A.length + flowers.B.length,
+    right: flowers.C.length + flowers.D.length
+  };
+}
+
+// 成立する移動パターンを調べる
+function getTransferCandidates() {
+  const { left, right } = getGardenCounts();
+  const candidates = [];
+
+  // ① 右から左へ移動して、左を10にする
+  const moveToLeft10 = 10 - left;
+  if (moveToLeft10 > 0 && moveToLeft10 <= right) {
+    candidates.push({
+      pattern: 1,
+      from: 'right',
+      to: 'left',
+      target: 10,
+      moveCount: moveToLeft10
+    });
+  }
+
+  // ② 右から左へ移動して、左を5にする
+  const moveToLeft5 = 5 - left;
+  if (moveToLeft5 > 0 && moveToLeft5 <= right) {
+    candidates.push({
+      pattern: 2,
+      from: 'right',
+      to: 'left',
+      target: 5,
+      moveCount: moveToLeft5
+    });
+  }
+
+  // ③ 左から右へ移動して、右を10にする
+  const moveToRight10 = 10 - right;
+  if (moveToRight10 > 0 && moveToRight10 <= left) {
+    candidates.push({
+      pattern: 3,
+      from: 'left',
+      to: 'right',
+      target: 10,
+      moveCount: moveToRight10
+    });
+  }
+
+  // ④ 左から右へ移動して、右を5にする
+  const moveToRight5 = 5 - right;
+  if (moveToRight5 > 0 && moveToRight5 <= left) {
+    candidates.push({
+      pattern: 4,
+      from: 'left',
+      to: 'right',
+      target: 5,
+      moveCount: moveToRight5
+    });
+  }
+
+  return candidates;
+}
+
+// 成立するパターンからランダムに1つ選ぶ
+function chooseTransferPlan() {
+  const candidates = getTransferCandidates();
+
+  if (candidates.length === 0) {
+    return null;
+  }
+
+  const index = Math.floor(Math.random() * candidates.length);
+  return candidates[index];
+}
+
+
 function key(n) {
   if(finished) return;
   const input = document.getElementById('answer');
