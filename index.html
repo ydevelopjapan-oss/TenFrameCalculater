@@ -510,6 +510,9 @@ function prepareRandomTransfer() {
 
   // ③ 移動後の配置を計算する
   const result = buildTransferResult(selection);
+  console.log('抽選パターン:', plan.pattern);
+console.log('移動選択:', selection);
+console.log('移動結果:', result);
 
   if (!result) {
     document.getElementById('status').textContent =
