@@ -579,20 +579,15 @@ async function animateWholeFlower(move) {
   flying.style.pointerEvents = 'none';
 
   document.body.appendChild(flying);
+
+  // 元の花は隠したままにする
   source.style.visibility = 'hidden';
 
-  await animateElement(
-    flying,
-    from,
-    to,
-    1100
-  );
+  await animateElement(flying, from, to, 1100);
 
-  flying.remove();
-  source.style.visibility = '';
+  // 移動先に残しておく
+  return flying;
 }
-
-
 // 花びら1枚を移動する
 async function animatePetal(move) {
   const sourceSvg = document.getElementById(move.from);
@@ -602,7 +597,7 @@ async function animatePetal(move) {
     `[data-petal="${move.petal}"]`
   );
 
-  if (!sourcePetal) return;
+  if (!sourcePetal) return null;
 
   const rect = sourcePetal.getBoundingClientRect();
 
@@ -640,49 +635,59 @@ async function animatePetal(move) {
   flying.style.borderRadius = '50%';
   flying.style.background = '#f5a5c2';
   flying.style.border = '1.5px solid #dc7a9f';
-  flying.style.transform = `rotate(${angles[move.petal - 1]}deg)`;
+  flying.style.transform =
+    `rotate(${angles[move.petal - 1]}deg)`;
   flying.style.zIndex = '9999';
   flying.style.pointerEvents = 'none';
 
   document.body.appendChild(flying);
+
+  // 元の花びらは隠したままにする
   sourcePetal.style.visibility = 'hidden';
 
   await animateElement(flying, from, to);
 
-  flying.remove();
-  sourcePetal.style.visibility = '';
+  // 移動先に残しておく
+  return flying;
 }
 
-
-// 抽選結果に従って、順番に移動させる
+// 抽選結果に従って、同時に移動させる
 async function animateTransfer(transfer) {
   const status = document.getElementById('status');
 
   document.getElementById('equal').disabled = true;
 
-  // 花を丸ごと移動
-  for (const move of transfer.result.moves) {
-    if (move.type === 'whole') {
-      status.textContent = '完成した花が移動するよ…';
-      await animateWholeFlower(move);
-    } else {
-      status.textContent = '花びらが移動するよ…';
-      await animatePetal(move);
-    }
+  status.textContent = '花が移動するよ…';
 
-    // 次の移動まで少し間をあける
-    await new Promise(resolve => setTimeout(resolve, 250));
-  }
+  // すべての移動を同時に開始する
+  const flyingElements = await Promise.all(
+    transfer.result.moves.map(move => {
+      if (move.type === 'whole') {
+        return animateWholeFlower(move);
+      } else {
+        return animatePetal(move);
+      }
+    })
+  );
 
-  // すべての移動が終わったら配置を確定
+  // 移動後の配置を確定する
   flowers = transfer.result.nextFlowers;
   render();
+
+  // 元の花壇の表示状態を戻す
+  ['A','B','C','D'].forEach(name => {
+    document.getElementById(name).style.visibility = '';
+  });
+
+  // 移動先に残していた複製を取り除く
+  flyingElements.forEach(element => {
+    if (element) element.remove();
+  });
 
   status.textContent = '移動できたよ！';
 
   document.getElementById('equal').disabled = false;
 }
-
 function key(n) {
   if(finished) return;
   const input = document.getElementById('answer');
