@@ -716,10 +716,17 @@ document.getElementById('equal').onclick = function() {
   status.textContent='花びらが集まるよ…';
   this.disabled=true;
 
-  setTimeout(() => {
-  prepareRandomTransfer();
-  document.getElementById('equal').disabled = false;
+
+setTimeout(async () => {
+  const transfer = prepareRandomTransfer();
+
+  if (transfer) {
+    await animateTransfer(transfer);
+  } else {
+    document.getElementById('equal').disabled = false;
+  }
 }, 2000);
+
 };
 
 // 5＋6用：花全体を移動する関数
