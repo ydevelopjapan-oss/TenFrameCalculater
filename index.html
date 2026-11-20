@@ -492,126 +492,49 @@ function buildTransferResult(selection) {
   };
 }
 
-function buildTransferResult(selection) {
-  if (!selection) return null;
 
-  // 現在の花壇をコピーする（元データは変更しない）
-  const nextFlowers = {
-    A: [...flowers.A],
-    B: [...flowers.B],
-    C: [...flowers.C],
-    D: [...flowers.D]
+let pendingTransfer = null;
+
+function prepareRandomTransfer() {
+  // ① 移動パターンを選ぶ
+  const plan = chooseTransferPlan();
+
+  if (!plan) {
+    document.getElementById('status').textContent =
+      '移動できるパターンがありません。';
+    return null;
+  }
+
+  // ② 移動する花・花びらを選ぶ
+  const selection = createTransferSelection(plan);
+
+  // ③ 移動後の配置を計算する
+  const result = buildTransferResult(selection);
+
+  if (!result) {
+    document.getElementById('status').textContent =
+      '移動後の配置を作れませんでした。';
+    return null;
+  }
+
+  pendingTransfer = {
+    plan,
+    selection,
+    result
   };
 
-  const sourceNames =
-    selection.from === 'right' ? ['D', 'C'] : ['B', 'A'];
-
-  const targetNames =
-    selection.to === 'left' ? ['B', 'A'] : ['D', 'C'];
-
-  const moves = [];
-  const rearrangements = [];
-
-  // 移動先に完成した花を置く空きがなければ整理する
-  function makeEmptySlot() {
-    let empty = targetNames.find(
-      name => nextFlowers[name].length === 0
-    );
-
-    if (empty) return empty;
-
-    // 既存の花びらを1つの花にまとめる
-    const existing = targetNames.flatMap(
-      name => nextFlowers[name]
-    );
-
-    if (existing.length > 5) {
-      return null;
-    }
-
-    const destination = targetNames[0];
-
-    targetNames.forEach(name => {
-      nextFlowers[name] = [];
-    });
-
-    nextFlowers[destination] =
-      existing.map((_, i) => i + 1);
-
-    rearrangements.push({
-      destination,
-      count: existing.length
-    });
-
-    return targetNames[1];
-  }
-
-  // 完成した花を丸ごと移動
-  for (const name of selection.wholeFlowers) {
-    const destination = makeEmptySlot();
-
-    if (!destination) return null;
-
-    nextFlowers[destination] = [...nextFlowers[name]];
-    nextFlowers[name] = [];
-
-    moves.push({
-      type: 'whole',
-      from: name,
-      to: destination
-    });
-  }
-
-  // 花びらだけ移動
-  for (const name of sourceNames) {
-    const selected = selection.petals[name] || [];
-
-    for (const petal of selected) {
-      // 移動先の、まだ5枚になっていない花を探す
-      let destination = targetNames.find(
-        target => nextFlowers[target].length > 0 &&
-                  nextFlowers[target].length < 5
-      );
-
-      // なければ空の花を使う
-      if (!destination) {
-        destination = targetNames.find(
-          target => nextFlowers[target].length === 0
-        );
-      }
-
-      if (!destination) return null;
-
-      // 移動先で使える最初の番号を探す
-      const used = nextFlowers[destination];
-      const targetPetal = [1,2,3,4,5].find(
-        n => !used.includes(n)
-      );
-
-      if (!targetPetal) return null;
-
-      nextFlowers[destination].push(targetPetal);
-
-      nextFlowers[name] =
-        nextFlowers[name].filter(n => n !== petal);
-
-      moves.push({
-        type: 'petal',
-        from: name,
-        petal,
-        to: destination,
-        targetPetal
-      });
-    }
-  }
-
-  return {
-    nextFlowers,
-    moves,
-    rearrangements
+  const patternNames = {
+    1: '右から左へ10を作る',
+    2: '右から左へ5を作る',
+    3: '左から右へ10を作る',
+    4: '左から右へ5を作る'
   };
+
+  document.getElementById('status').textContent =
+    `パターン${plan.pattern}：${patternNames[plan.pattern}（${plan.moveCount}枚移動）`;
+
+  return pendingTransfer;
 }
-
 
 function key(n) {
   if(finished) return;
@@ -646,7 +569,7 @@ document.getElementById('equal').onclick = function() {
   status.textContent='花びらが集まるよ…';
   this.disabled=true;
 
-  setTimeout(animation,2000);
+  setTimeout(prepareRandomTransfer,2000);
 };
 
 // 5＋6用：花全体を移動する関数
