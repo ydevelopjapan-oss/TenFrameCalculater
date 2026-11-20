@@ -536,6 +536,153 @@ function prepareRandomTransfer() {
   return pendingTransfer;
 }
 
+// 花びら・花を実際に移動させる
+function animateElement(element, from, to, duration = 900) {
+  return new Promise(resolve => {
+    const animation = element.animate([
+      {
+        left: `${from.left}px`,
+        top: `${from.top}px`
+      },
+      {
+        left: `${to.left}px`,
+        top: `${to.top}px`
+      }
+    ], {
+      duration,
+      easing: 'ease-in-out',
+      fill: 'forwards'
+    });
+
+    animation.onfinish = resolve;
+  });
+}
+
+
+// 花全体を移動する
+async function animateWholeFlower(move) {
+  const source = document.getElementById(move.from);
+  const target = document.getElementById(move.to);
+
+  const from = source.getBoundingClientRect();
+  const to = target.getBoundingClientRect();
+
+  const flying = source.cloneNode(true);
+
+  flying.style.position = 'fixed';
+  flying.style.left = `${from.left}px`;
+  flying.style.top = `${from.top}px`;
+  flying.style.width = `${from.width}px`;
+  flying.style.height = `${from.height}px`;
+  flying.style.margin = '0';
+  flying.style.zIndex = '9999';
+  flying.style.pointerEvents = 'none';
+
+  document.body.appendChild(flying);
+  source.style.visibility = 'hidden';
+
+  await animateElement(
+    flying,
+    from,
+    to,
+    1100
+  );
+
+  flying.remove();
+  source.style.visibility = '';
+}
+
+
+// 花びら1枚を移動する
+async function animatePetal(move) {
+  const sourceSvg = document.getElementById(move.from);
+  const targetSvg = document.getElementById(move.to);
+
+  const sourcePetal = sourceSvg.querySelector(
+    `[data-petal="${move.petal}"]`
+  );
+
+  if (!sourcePetal) return;
+
+  const rect = sourcePetal.getBoundingClientRect();
+
+  const scale = targetSvg.getBoundingClientRect().width / 100;
+
+  const width = 16 * scale;
+  const height = 28 * scale;
+
+  const targetPoint = targetSvg.createSVGPoint();
+  const [x, y] = point(move.targetPetal);
+  targetPoint.x = x;
+  targetPoint.y = y;
+
+  const destination = targetPoint.matrixTransform(
+    targetSvg.getScreenCTM()
+  );
+
+  const from = {
+    left: rect.left + rect.width / 2 - width / 2,
+    top: rect.top + rect.height / 2 - height / 2
+  };
+
+  const to = {
+    left: destination.x - width / 2,
+    top: destination.y - height / 2
+  };
+
+  const flying = document.createElement('div');
+
+  flying.style.position = 'fixed';
+  flying.style.left = `${from.left}px`;
+  flying.style.top = `${from.top}px`;
+  flying.style.width = `${width}px`;
+  flying.style.height = `${height}px`;
+  flying.style.borderRadius = '50%';
+  flying.style.background = '#f5a5c2';
+  flying.style.border = '1.5px solid #dc7a9f';
+  flying.style.transform = `rotate(${angles[move.petal - 1]}deg)`;
+  flying.style.zIndex = '9999';
+  flying.style.pointerEvents = 'none';
+
+  document.body.appendChild(flying);
+  sourcePetal.style.visibility = 'hidden';
+
+  await animateElement(flying, from, to);
+
+  flying.remove();
+  sourcePetal.style.visibility = '';
+}
+
+
+// 抽選結果に従って、順番に移動させる
+async function animateTransfer(transfer) {
+  const status = document.getElementById('status');
+
+  document.getElementById('equal').disabled = true;
+
+  // 花を丸ごと移動
+  for (const move of transfer.result.moves) {
+    if (move.type === 'whole') {
+      status.textContent = '完成した花が移動するよ…';
+      await animateWholeFlower(move);
+    } else {
+      status.textContent = '花びらが移動するよ…';
+      await animatePetal(move);
+    }
+
+    // 次の移動まで少し間をあける
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+
+  // すべての移動が終わったら配置を確定
+  flowers = transfer.result.nextFlowers;
+  render();
+
+  status.textContent = '移動できたよ！';
+
+  document.getElementById('equal').disabled = false;
+}
+
 function key(n) {
   if(finished) return;
   const input = document.getElementById('answer');
