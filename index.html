@@ -569,7 +569,10 @@ document.getElementById('equal').onclick = function() {
   status.textContent='花びらが集まるよ…';
   this.disabled=true;
 
-  setTimeout(prepareRandomTransfer,2000);
+  setTimeout(() => {
+  prepareRandomTransfer();
+  document.getElementById('equal').disabled = false;
+}, 2000);
 };
 
 // 5＋6用：花全体を移動する関数
