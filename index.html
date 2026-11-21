@@ -111,7 +111,7 @@ button:active { transform: scale(.96); }
 
 <h1>🌸 さくらの計算機 🌸</h1>
 
-<div class="problem">4 ＋ 9</div>
+<div class="problem" id="problem"></div>
 
 <div class="garden">
 
@@ -164,19 +164,48 @@ button:active { transform: scale(.96); }
 <div id="status">答えを考えてみよう！</div>
 
 <div id="result">
-  <h2>4 ＋ 9 ＝ 13</h2>
+  <h2 id="resultText"></h2>
   <p>2つの花が完成したよ！</p>
 </div>
 
 <script>
 const angles = [72,144,216,288,0];
 
-let flowers = {
-  A:[1,2,3,4],
-  B:[],
-  C:[1,2,3,4,5],
-  D:[1,2,3,4]
+
+// 計算問題
+const problem = {
+  left: 4,
+  right: 9
 };
+
+const answerNumber = problem.left + problem.right;
+
+// 数字に応じて花びらを配置する
+function createFlowers(number, leftName, rightName) {
+  const flowers = {
+    [leftName]: [],
+    [rightName]: []
+  };
+
+  // 右側の花から最大5枚配置
+  const rightCount = Math.min(number, 5);
+  flowers[rightName] =
+    Array.from({ length: rightCount }, (_, i) => i + 1);
+
+  // 残りを左側の花に配置
+  const leftCount = number - rightCount;
+  flowers[leftName] =
+    Array.from({ length: leftCount }, (_, i) => i + 1);
+
+  return flowers;
+}
+
+// 左右それぞれの花壇を作る
+const flowers = {
+  ...createFlowers(problem.left, 'B', 'A'),
+  ...createFlowers(problem.right, 'D', 'C')
+};
+
 
 let finished = false;
 
@@ -224,6 +253,8 @@ function render() {
   ['A','B','C','D'].forEach(draw);
 }
 render();
+document.getElementById('problem').textContent =
+  `${problem.left} ＋ ${problem.right}`;
 
 
 // 左右の花壇の花びらの合計を調べる
@@ -910,7 +941,7 @@ document.getElementById('equal').onclick = function() {
   const status = document.getElementById('status');
 
   if(answer !== '') {
-    if(Number(answer) === 13) {
+    if(Number(answer) === answerNumber) {
       finished = true;
       status.textContent='正解！すごい！';
       showResult();
@@ -1062,6 +1093,8 @@ function completeTransfer49() {
 }
 function showResult() {
   const tree = document.getElementById('tree');
+  document.getElementById('resultText').textContent =
+  `${problem.left} ＋ ${problem.right} ＝ ${answerNumber}`;
 
   // 木のイラストを挿入
   tree.innerHTML = `
