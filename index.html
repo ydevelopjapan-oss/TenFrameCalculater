@@ -698,7 +698,16 @@ async function animateTransfer(transfer) {
     await moveTenToLeft();
     return;
   }
+  // どちらかの花壇に5枚集まった場合
+if (counts.left === 5 || counts.right === 5) {
+  const side = counts.left === 5 ? '左' : '右';
 
+  status.textContent =
+    `${side}の花壇に5枚集まったよ！次の移動を考えよう！`;
+
+  document.getElementById('equal').disabled = false;
+  return;
+}
   status.textContent = '移動できたよ！';
   document.getElementById('equal').disabled = false;
 }
