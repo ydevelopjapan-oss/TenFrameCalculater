@@ -291,6 +291,7 @@ function getTransferCandidates() {
 }
 
 
+
 // 成立するパターンから移動方法を選ぶ
 function chooseTransferPlan() {
   const { left, right } = getGardenCounts();
@@ -331,7 +332,6 @@ function chooseTransferPlan() {
   const index = Math.floor(Math.random() * candidates.length);
   return candidates[index];
 }
-
 
 function createTransferSelection(plan) {
   if (!plan) return null;
