@@ -716,6 +716,28 @@ async function animateTransfer(transfer) {
 
   // 左側に10枚集まった場合
   const counts = getGardenCounts();
+    // 左右に完成した花が1つずつ揃ったら、
+  // 右の完成した花を左へ自動で移動する
+  const leftCompleted = ['B', 'A'].filter(
+    name => flowers[name].length === 5
+  ).length;
+
+  const rightCompleted = ['D', 'C'].filter(
+    name => flowers[name].length === 5
+  ).length;
+
+  if (
+    leftCompleted === 1 &&
+    rightCompleted === 1 &&
+    counts.left === 5
+  ) {
+    const nextTransfer = prepareRandomTransfer();
+
+    if (nextTransfer) {
+      await animateTransfer(nextTransfer);
+      return;
+    }
+  }
 
   if (counts.left === 10) {
     status.textContent = '左の花壇に10枚集まったよ！';
