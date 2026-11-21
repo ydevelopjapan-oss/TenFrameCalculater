@@ -693,7 +693,7 @@ async function animateTransfer(transfer) {
   }
 
   // 右側に10枚、左側に3枚残った場合
-  if (counts.right === 10 && counts.left === 3) {
+  if (counts.right === 10) {
     status.textContent = '花壇の中身を入れ替えるよ…';
     await moveTenToLeft();
     return;
@@ -703,43 +703,90 @@ async function animateTransfer(transfer) {
   document.getElementById('equal').disabled = false;
 }
 
-// 右側の完成した花2つを左へ、残り3枚を右へ移す
+
+// 右側の10枚を左へ、残りの花びらを右へ移す
 async function moveTenToLeft() {
   const status = document.getElementById('status');
 
-  status.textContent = '花壇を入れ替えるよ！';
+  const leftNames = ['B', 'A'];
+  const rightNames = ['D', 'C'];
 
-  // 完成した花2つを左へ移動
-  const wholeMoves = [
-    { type: 'whole', from: 'D', to: 'B' },
-    { type: 'whole', from: 'C', to: 'A' }
-  ];
+  status.textContent = '花壇の中身を入れ替えるよ！';
 
-  // 左側に残った3枚を右へ移動
-  const petalMoves = [1, 2, 3].map(n => ({
-    type: 'petal',
-    from: 'A',
-    petal: n,
-    to: 'D',
-    targetPetal: n
+  // 右側の完成した花を調べる
+  const completedFlowers = rightNames.filter(
+    name => flowers[name].length === 5
+  );
+
+  // 10枚が完成した花2つになっているか確認
+  if (completedFlowers.length !== 2) {
+    status.textContent = '完成した花の配置を確認できません。';
+    document.getElementById('equal').disabled = false;
+    return;
+  }
+
+  // 完成した花を左側へ移す
+  const wholeMoves = completedFlowers.map((name, i) => ({
+    type: 'whole',
+    from: name,
+    to: leftNames[i]
   }));
 
-  // 花と花びらの移動をすべて同時に開始
+  // 左側に残っている花びらを集める
+  const remainingPetals = [];
+
+  leftNames.forEach(name => {
+    flowers[name].forEach(petal => {
+      remainingPetals.push({
+        from: name,
+        petal
+      });
+    });
+  });
+
+  // 残りの花びらを右側の空いた場所へ割り当てる
+  const petalMoves = remainingPetals.map((item, i) => {
+    const targetIndex = Math.floor(i / 5);
+    const targetPetal = (i % 5) + 1;
+
+    return {
+      type: 'petal',
+      from: item.from,
+      petal: item.petal,
+      to: rightNames[targetIndex],
+      targetPetal
+    };
+  });
+
+  // 花と花びらを同時に移動
   const flyingElements = await Promise.all([
     ...wholeMoves.map(move => animateWholeFlower(move)),
     ...petalMoves.map(move => animatePetal(move))
   ]);
 
-  // 移動後の配置を確定
-  flowers = {
-    A: [1,2,3,4,5],
-    B: [1,2,3,4,5],
+  // 移動後の配置を作る
+  const nextFlowers = {
+    A: [],
+    B: [],
     C: [],
-    D: [1,2,3]
+    D: []
   };
 
+  // 左側に完成した花2つ
+  wholeMoves.forEach(move => {
+    nextFlowers[move.to] = [1, 2, 3, 4, 5];
+  });
+
+  // 右側に残りの花びらを配置
+  petalMoves.forEach(move => {
+    nextFlowers[move.to].push(move.targetPetal);
+  });
+
+  // 配置を確定
+  flowers = nextFlowers;
+
   // アニメーション用の複製を片付ける
-  ['A','B','C','D'].forEach(name => {
+  ['A', 'B', 'C', 'D'].forEach(name => {
     document.getElementById(name).style.visibility = '';
   });
 
@@ -751,7 +798,7 @@ async function moveTenToLeft() {
 
   status.textContent = '左の花壇に10枚集まったよ！';
 
-  // 桜の木が誕生！
+  // 桜の木が誕生
   showResult();
 }
 
