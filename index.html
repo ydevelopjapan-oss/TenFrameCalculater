@@ -290,8 +290,38 @@ function getTransferCandidates() {
   return candidates;
 }
 
-// 成立するパターンからランダムに1つ選ぶ
+
+// 成立するパターンから移動方法を選ぶ
 function chooseTransferPlan() {
+  const { left, right } = getGardenCounts();
+
+  // 左右それぞれの完成した花の数
+  const leftCompleted = ['B', 'A'].filter(
+    name => flowers[name].length === 5
+  ).length;
+
+  const rightCompleted = ['D', 'C'].filter(
+    name => flowers[name].length === 5
+  ).length;
+
+  // 左右に完成した花が1つずつあり、
+  // 左側が5枚なら、右の完成した花を左へ移す
+  if (
+    leftCompleted === 1 &&
+    rightCompleted === 1 &&
+    left === 5 &&
+    right >= 5
+  ) {
+    return {
+      pattern: 1,
+      from: 'right',
+      to: 'left',
+      target: 10,
+      moveCount: 5
+    };
+  }
+
+  // 通常は成立するパターンからランダムに選ぶ
   const candidates = getTransferCandidates();
 
   if (candidates.length === 0) {
@@ -301,6 +331,7 @@ function chooseTransferPlan() {
   const index = Math.floor(Math.random() * candidates.length);
   return candidates[index];
 }
+
 
 function createTransferSelection(plan) {
   if (!plan) return null;
