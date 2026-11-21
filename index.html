@@ -403,10 +403,11 @@ function createTransferSelection(plan) {
   };
 }
 
+
 function buildTransferResult(selection) {
   if (!selection) return null;
 
-  // 現在の花壇をコピーする（元データは変更しない）
+  // 現在の花壇をコピー
   const nextFlowers = {
     A: [...flowers.A],
     B: [...flowers.B],
@@ -421,37 +422,51 @@ function buildTransferResult(selection) {
     selection.to === 'left' ? ['B', 'A'] : ['D', 'C'];
 
   const moves = [];
-  const rearrangements = [];
 
-  // 移動先に完成した花を置く空きがなければ整理する
+  // 移動先に空きがない場合、既存の花びらを整理する
   function makeEmptySlot() {
-    let empty = targetNames.find(
+    const empty = targetNames.find(
       name => nextFlowers[name].length === 0
     );
 
     if (empty) return empty;
 
-    // 既存の花びらを1つの花にまとめる
-    const existing = targetNames.flatMap(
-      name => nextFlowers[name]
+    // 移動先にある花びらをすべて集める
+    const existing = targetNames.flatMap(name =>
+      nextFlowers[name].map(petal => ({
+        from: name,
+        petal
+      }))
     );
 
-    if (existing.length > 5) {
-      return null;
-    }
+    // 5枚を超える場合は、1つの花にまとめられない
+    if (existing.length > 5) return null;
 
+    // 先頭の花にまとめて、もう一方を空ける
     const destination = targetNames[0];
 
     targetNames.forEach(name => {
       nextFlowers[name] = [];
     });
 
-    nextFlowers[destination] =
-      existing.map((_, i) => i + 1);
+    existing.forEach((item, index) => {
+      const targetPetal = index + 1;
 
-    rearrangements.push({
-      destination,
-      count: existing.length
+      nextFlowers[destination].push(targetPetal);
+
+      // 実際に位置や番号が変わる花びらだけ動かす
+      if (
+        item.from !== destination ||
+        item.petal !== targetPetal
+      ) {
+        moves.push({
+          type: 'petal',
+          from: item.from,
+          petal: item.petal,
+          to: destination,
+          targetPetal
+        });
+      }
     });
 
     return targetNames[1];
@@ -473,15 +488,16 @@ function buildTransferResult(selection) {
     });
   }
 
-  // 花びらだけ移動
+  // 花びらだけを移動
   for (const name of sourceNames) {
     const selected = selection.petals[name] || [];
 
     for (const petal of selected) {
-      // 移動先の、まだ5枚になっていない花を探す
+      // 5枚未満の花を優先
       let destination = targetNames.find(
-        target => nextFlowers[target].length > 0 &&
-                  nextFlowers[target].length < 5
+        target =>
+          nextFlowers[target].length > 0 &&
+          nextFlowers[target].length < 5
       );
 
       // なければ空の花を使う
@@ -493,9 +509,9 @@ function buildTransferResult(selection) {
 
       if (!destination) return null;
 
-      // 移動先で使える最初の番号を探す
       const used = nextFlowers[destination];
-      const targetPetal = [1,2,3,4,5].find(
+
+      const targetPetal = [1, 2, 3, 4, 5].find(
         n => !used.includes(n)
       );
 
@@ -516,12 +532,22 @@ function buildTransferResult(selection) {
     }
   }
 
+  // 移動枚数が計画どおりか確認
+  const movedCount =
+    selection.wholeFlowers.length * 5 +
+    Object.values(selection.petals)
+      .reduce((sum, petals) => sum + petals.length, 0);
+
+  if (movedCount !== selection.moveCount) {
+    return null;
+  }
+
   return {
     nextFlowers,
-    moves,
-    rearrangements
+    moves
   };
 }
+
 
 
 let pendingTransfer = null;
