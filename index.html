@@ -652,14 +652,14 @@ async function animatePetal(move) {
 }
 
 // 抽選結果に従って、同時に移動させる
+
 async function animateTransfer(transfer) {
   const status = document.getElementById('status');
 
   document.getElementById('equal').disabled = true;
-
   status.textContent = '花が移動するよ…';
 
-  // すべての移動を同時に開始する
+  // すべての移動を同時に開始
   const flyingElements = await Promise.all(
     transfer.result.moves.map(move => {
       if (move.type === 'whole') {
@@ -670,24 +670,91 @@ async function animateTransfer(transfer) {
     })
   );
 
-  // 移動後の配置を確定する
+  // 移動後の配置を確定
   flowers = transfer.result.nextFlowers;
-  render();
 
-  // 元の花壇の表示状態を戻す
   ['A','B','C','D'].forEach(name => {
     document.getElementById(name).style.visibility = '';
   });
 
-  // 移動先に残していた複製を取り除く
   flyingElements.forEach(element => {
     if (element) element.remove();
   });
 
-  status.textContent = '移動できたよ！';
+  render();
 
+  // 左側に10枚集まった場合
+  const counts = getGardenCounts();
+
+  if (counts.left === 10) {
+    status.textContent = '左の花壇に10枚集まったよ！';
+    showResult();
+    return;
+  }
+
+  // 右側に10枚、左側に3枚残った場合
+  if (counts.right === 10 && counts.left === 3) {
+    status.textContent = '花壇の中身を入れ替えるよ…';
+    await moveTenToLeft();
+    return;
+  }
+
+  status.textContent = '移動できたよ！';
   document.getElementById('equal').disabled = false;
 }
+
+// 右側の完成した花2つを左へ、残り3枚を右へ移す
+async function moveTenToLeft() {
+  const status = document.getElementById('status');
+
+  status.textContent = '花壇を入れ替えるよ！';
+
+  // 完成した花2つを左へ移動
+  const wholeMoves = [
+    { type: 'whole', from: 'D', to: 'B' },
+    { type: 'whole', from: 'C', to: 'A' }
+  ];
+
+  // 左側に残った3枚を右へ移動
+  const petalMoves = [1, 2, 3].map(n => ({
+    type: 'petal',
+    from: 'A',
+    petal: n,
+    to: 'D',
+    targetPetal: n
+  }));
+
+  // 花と花びらの移動をすべて同時に開始
+  const flyingElements = await Promise.all([
+    ...wholeMoves.map(move => animateWholeFlower(move)),
+    ...petalMoves.map(move => animatePetal(move))
+  ]);
+
+  // 移動後の配置を確定
+  flowers = {
+    A: [1,2,3,4,5],
+    B: [1,2,3,4,5],
+    C: [],
+    D: [1,2,3]
+  };
+
+  // アニメーション用の複製を片付ける
+  ['A','B','C','D'].forEach(name => {
+    document.getElementById(name).style.visibility = '';
+  });
+
+  flyingElements.forEach(element => {
+    if (element) element.remove();
+  });
+
+  render();
+
+  status.textContent = '左の花壇に10枚集まったよ！';
+
+  // 桜の木が誕生！
+  showResult();
+}
+
 function key(n) {
   if(finished) return;
   const input = document.getElementById('answer');
