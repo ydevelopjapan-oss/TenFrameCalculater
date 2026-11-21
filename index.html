@@ -105,12 +105,38 @@ button:active { transform: scale(.96); }
   width: 100%;
   max-width: 110px;
 }
+#setup {
+  margin: 30px auto;
+}
+
+#setup input {
+  width: 90px;
+  margin: 8px;
+}
+
+#setup button {
+  display: block;
+  margin: 20px auto;
+}
 </style>
 </head>
 <body>
 
 <h1>🌸 さくらの計算機 🌸</h1>
+<div id="setup">
+  <p>好きな数を入力してね</p>
 
+  <div>
+    <input id="leftNumber" type="number"
+      min="0" max="9" value="4">
+    ＋
+    <input id="rightNumber" type="number"
+      min="0" max="9" value="9">
+  </div>
+
+  <button onclick="startGame()">計算スタート</button>
+</div>
+<div id="game" style="display:none">
 <div class="problem" id="problem"></div>
 
 <div class="garden">
@@ -167,18 +193,19 @@ button:active { transform: scale(.96); }
   <h2 id="resultText"></h2>
   <p>2つの花が完成したよ！</p>
 </div>
+</div>
 
 <script>
 const angles = [72,144,216,288,0];
 
 
 // 計算問題
-const problem = {
+let problem = {
   left: 4,
   right: 9
 };
 
-const answerNumber = problem.left + problem.right;
+let answerNumber = problem.left + problem.right;
 
 // 数字に応じて花びらを配置する
 function createFlowers(number, leftName, rightName) {
@@ -199,7 +226,52 @@ function createFlowers(number, leftName, rightName) {
 
   return flowers;
 }
+function startGame() {
+  const left = Number(
+    document.getElementById('leftNumber').value
+  );
 
+  const right = Number(
+    document.getElementById('rightNumber').value
+  );
+
+  if (
+    !Number.isInteger(left) ||
+    !Number.isInteger(right) ||
+    left < 0 || left > 9 ||
+    right < 0 || right > 9
+  ) {
+    alert('0〜9の数を入力してね');
+    return;
+  }
+
+  problem = { left, right };
+  answerNumber = left + right;
+
+  flowers = {
+    ...createFlowers(problem.left, 'B', 'A'),
+    ...createFlowers(problem.right, 'D', 'C')
+  };
+
+  finished = false;
+  pendingTransfer = null;
+
+  document.getElementById('answer').value = '';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('tree').innerHTML = '';
+  document.getElementById('equal').disabled = false;
+
+  document.getElementById('problem').textContent =
+    `${problem.left} ＋ ${problem.right}`;
+
+  document.getElementById('status').textContent =
+    '答えを考えてみよう！';
+
+  render();
+
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('game').style.display = 'block';
+}
 // 左右それぞれの花壇を作る
 let flowers = {
   ...createFlowers(problem.left, 'B', 'A'),
