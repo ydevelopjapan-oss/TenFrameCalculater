@@ -182,7 +182,7 @@ const answerNumber = problem.left + problem.right;
 
 // 数字に応じて花びらを配置する
 function createFlowers(number, leftName, rightName) {
-  let flowers = {
+  const flowers = {
     [leftName]: [],
     [rightName]: []
   };
@@ -201,7 +201,7 @@ function createFlowers(number, leftName, rightName) {
 }
 
 // 左右それぞれの花壇を作る
-const flowers = {
+let flowers = {
   ...createFlowers(problem.left, 'B', 'A'),
   ...createFlowers(problem.right, 'D', 'C')
 };
