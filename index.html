@@ -895,16 +895,15 @@ async function animateTransfer(transfer) {
     if (element) element.remove();
   });
 
-  render();
+ render();
 
 // 移動後の枚数を確認
 const counts = getGardenCounts();
 
-// 10未満の場合は、最終目的地へ集める
+// 10未満の場合
 if (answerNumber < 10) {
   const targetCount = counts[underTenDestination];
 
-  // まだ移動する花びらが残っている
   if (targetCount < answerNumber) {
     status.textContent = '残りの花びらも集めるよ！';
 
@@ -916,24 +915,51 @@ if (answerNumber < 10) {
     }
   }
 
-  // すべて集まった
   status.textContent = '花びらが全部集まったよ！';
   showResult();
   return;
 }
-  // 左側に10枚集まった場合
-  if (counts.left === 10) {
-    status.textContent = '左の花壇に10枚集まったよ！';
-    showResult();
+
+// 左側に10枚集まった場合
+if (counts.left === 10) {
+  status.textContent = '左の花壇に10枚集まったよ！';
+  showResult();
+  return;
+}
+
+// 右側に10枚集まった場合
+if (counts.right === 10) {
+  status.textContent = '花壇の中身を入れ替えるよ…';
+  await moveTenToLeft();
+  return;
+}
+
+// 左右に完成した花が1つずつ揃った場合
+const leftCompleted = ['B', 'A'].filter(
+  name => flowers[name].length === 5
+).length;
+
+const rightCompleted = ['D', 'C'].filter(
+  name => flowers[name].length === 5
+).length;
+
+if (
+  leftCompleted === 1 &&
+  rightCompleted === 1 &&
+  counts.left === 5 &&
+  counts.right === 5
+) {
+  status.textContent = '右の花を左へ移すよ！';
+
+  const nextTransfer = prepareRandomTransfer();
+
+  if (nextTransfer) {
+    await animateTransfer(nextTransfer);
     return;
   }
-  // 右側に10枚集まった場合場合
-  if (counts.right === 10) {
-    status.textContent = '花壇の中身を入れ替えるよ…';
-    await moveTenToLeft();
-    return;
-  }
-  // どちらかの花壇に5枚集まった場合
+}
+
+// どちらかの花壇に5枚集まった場合
 if (counts.left === 5 || counts.right === 5) {
   const side = counts.left === 5 ? '左' : '右';
 
@@ -943,8 +969,9 @@ if (counts.left === 5 || counts.right === 5) {
   document.getElementById('equal').disabled = false;
   return;
 }
-  status.textContent = '移動できたよ！';
-  document.getElementById('equal').disabled = false;
+
+status.textContent = '移動できたよ！';
+document.getElementById('equal').disabled = false;
 }
 
 
