@@ -921,8 +921,13 @@ if (answerNumber < 10) {
   showResult();
   return;
 }
-
-  // 右側に10枚、左側に3枚残った場合
+  // 左側に10枚集まった場合
+  if (counts.left === 10) {
+    status.textContent = '左の花壇に10枚集まったよ！';
+    showResult();
+    return;
+  }
+  // 右側に10枚集まった場合場合
   if (counts.right === 10) {
     status.textContent = '花壇の中身を入れ替えるよ…';
     await moveTenToLeft();
