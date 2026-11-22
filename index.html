@@ -923,7 +923,7 @@ if (answerNumber < 10) {
 // 左側に10枚集まった場合
 if (counts.left === 10) {
   status.textContent = '左の花壇に10枚集まったよ！';
-  showResult();
+  showResult(true);
   return;
 }
 
@@ -1070,7 +1070,7 @@ async function moveTenToLeft() {
   status.textContent = '左の花壇に10枚集まったよ！';
 
   // 桜の木が誕生
-  showResult();
+  showResult(true);
 }
 
 function key(n) {
@@ -1243,7 +1243,7 @@ function completeTransfer49() {
   render();
   showResult();
 }
-function showResult() {
+function showResult(showTree = answerNumber === 10) {
   const tree = document.getElementById('tree');
 
   finished = true;
@@ -1251,8 +1251,8 @@ function showResult() {
   document.getElementById('resultText').textContent =
     `${problem.left} ＋ ${problem.right} ＝ ${answerNumber}`;
 
-  // 10以外では木を誕生させない
-  if (answerNumber !== 10) {
+  // 木を出さない場合
+  if (!showTree) {
     tree.innerHTML = '';
     document.getElementById('result').style.display = 'block';
     document.getElementById('equal').disabled = true;
