@@ -255,6 +255,7 @@ function startGame() {
 
   finished = false;
   pendingTransfer = null;
+  underTenDestination = null;
 
   document.getElementById('answer').value = '';
   document.getElementById('result').style.display = 'none';
@@ -654,10 +655,63 @@ function buildTransferResult(selection) {
 
 
 let pendingTransfer = null;
+// 10未満のとき、最終的に花びらを集める花壇
+let underTenDestination = null;
+// 10未満の移動計画
+function chooseUnderTenPlan() {
+  const counts = getGardenCounts();
 
+  const to = underTenDestination;
+  const from = to === 'left' ? 'right' : 'left';
+
+  const targetCount = counts[to];
+  const sourceCount = counts[from];
+
+  if (sourceCount === 0) return null;
+
+  // すでに完成した花があるか
+  const hasCompletedFlower =
+    ['A', 'B', 'C', 'D'].some(
+      name => flowers[name].length === 5
+    );
+
+  let moveCount;
+
+  // 両方5未満で、まだ完成した花がない場合は
+  // まず5枚を作る
+  if (
+    answerNumber >= 5 &&
+    targetCount < 5 &&
+    !hasCompletedFlower
+  ) {
+    moveCount = 5 - targetCount;
+  } else {
+    // 完成した花がある場合は壊さず、
+    // 残りをすべて移動する
+    moveCount = sourceCount;
+  }
+
+  return {
+    pattern: 0,
+    from,
+    to,
+    target: targetCount + moveCount,
+    moveCount
+  };
+}
 function prepareRandomTransfer() {
   // ① 移動パターンを選ぶ
-  const plan = chooseTransferPlan();
+if (
+  answerNumber < 10 &&
+  underTenDestination === null
+) {
+  underTenDestination =
+    Math.random() < 0.5 ? 'left' : 'right';
+}
+
+const plan = answerNumber < 10
+  ? chooseUnderTenPlan()
+  : chooseTransferPlan();
 
   if (!plan) {
     document.getElementById('status').textContent =
@@ -843,23 +897,17 @@ async function animateTransfer(transfer) {
 
   render();
 
-  // 左側に10枚集まった場合
-  const counts = getGardenCounts();
-    // 左右に完成した花が1つずつ揃ったら、
-  // 右の完成した花を左へ自動で移動する
-  const leftCompleted = ['B', 'A'].filter(
-    name => flowers[name].length === 5
-  ).length;
+// 移動後の枚数を確認
+const counts = getGardenCounts();
 
-  const rightCompleted = ['D', 'C'].filter(
-    name => flowers[name].length === 5
-  ).length;
+// 10未満の場合は、最終目的地へ集める
+if (answerNumber < 10) {
+  const targetCount = counts[underTenDestination];
 
-  if (
-    leftCompleted === 1 &&
-    rightCompleted === 1 &&
-    counts.left === 5
-  ) {
+  // まだ移動する花びらが残っている
+  if (targetCount < answerNumber) {
+    status.textContent = '残りの花びらも集めるよ！';
+
     const nextTransfer = prepareRandomTransfer();
 
     if (nextTransfer) {
@@ -868,11 +916,11 @@ async function animateTransfer(transfer) {
     }
   }
 
-  if (counts.left === 10) {
-    status.textContent = '左の花壇に10枚集まったよ！';
-    showResult();
-    return;
-  }
+  // すべて集まった
+  status.textContent = '花びらが全部集まったよ！';
+  showResult();
+  return;
+}
 
   // 右側に10枚、左側に3枚残った場合
   if (counts.right === 10) {
@@ -1165,8 +1213,19 @@ function completeTransfer49() {
 }
 function showResult() {
   const tree = document.getElementById('tree');
+
+  finished = true;
+
   document.getElementById('resultText').textContent =
-  `${problem.left} ＋ ${problem.right} ＝ ${answerNumber}`;
+    `${problem.left} ＋ ${problem.right} ＝ ${answerNumber}`;
+
+  // 10以外では木を誕生させない
+  if (answerNumber !== 10) {
+    tree.innerHTML = '';
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('equal').disabled = true;
+    return;
+  }
 
   // 木のイラストを挿入
   tree.innerHTML = `
