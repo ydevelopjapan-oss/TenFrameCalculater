@@ -390,28 +390,22 @@ function getTransferCandidates() {
       moveCount: moveToRight5
     });
   }
-    // ⑤ 左右両方に5枚以上あり、
-  // それぞれに完成した花がある場合、
-  // 右から左へ完成した花を移す
-  const leftCompleted = ['B', 'A'].some(
-    name => flowers[name].length === 5
-  );
-
-  const rightCompleted = ['D', 'C'].some(
-    name => flowers[name].length === 5
-  );
-
+  // ⑤ 左Bの花びらを右側へ移し、
+  // 右Cの完成した花を左Bへ移す
   if (
-    left >= 5 &&
-    rightCompleted &&
-    leftCompleted
+    flowers.A.length === 5 &&
+    flowers.B.length > 0 &&
+    flowers.B.length < 5 &&
+    flowers.C.length === 5 &&
+    flowers.D.length > 0 &&
+    flowers.D.length < 5
   ) {
     candidates.push({
       pattern: 5,
       from: 'right',
       to: 'left',
       target: 10,
-      moveCount: 5
+      moveCount: 5 + flowers.B.length
     });
   }
 
@@ -437,6 +431,17 @@ function chooseTransferPlan() {
 
 function createTransferSelection(plan) {
   if (!plan) return null;
+  // パターン5：左Bの花びらを右へ、
+  // 右Cの完成した花を左Bへ移す
+  if (plan.pattern === 5) {
+    return {
+      ...plan,
+      wholeFlowers: ['C'],
+      petals: {
+        B: [...flowers.B]
+      }
+    };
+  }
 
   // 移動元の花の順番（画面の左から右）
   const sourceNames =
@@ -508,6 +513,55 @@ function createTransferSelection(plan) {
 
 function buildTransferResult(selection) {
   if (!selection) return null;
+  // パターン5専用：左右の花を入れ替える
+  if (selection.pattern === 5) {
+    const nextFlowers = {
+      A: [...flowers.A],
+      B: [...flowers.C],
+      C: [],
+      D: [...flowers.D]
+    };
+
+    const moves = [
+      {
+        type: 'whole',
+        from: 'C',
+        to: 'B'
+      }
+    ];
+
+    // 左Bの花びらを、右Dの続きから配置
+    const movingPetals = [...flowers.B];
+
+    movingPetals.forEach(petal => {
+      let destination;
+      let targetPetal;
+
+      if (nextFlowers.D.length < 5) {
+        destination = 'D';
+        targetPetal = nextFlowers.D.length + 1;
+      } else {
+        destination = 'C';
+        targetPetal = nextFlowers.C.length + 1;
+      }
+
+      nextFlowers[destination].push(targetPetal);
+
+      moves.push({
+        type: 'petal',
+        from: 'B',
+        petal,
+        to: destination,
+        targetPetal
+      });
+    });
+
+    // 左Bは完成した花に置き換わる
+    return {
+      nextFlowers,
+      moves
+    };
+  }
 
   // 現在の花壇をコピー
   const nextFlowers = {
@@ -740,6 +794,7 @@ const plan = answerNumber < 10
     2: '右から左へ5を作る',
     3: '左から右へ10を作る',
     4: '左から右へ5を作る'
+    5: '左の花びらと右の完成した花を移動',
   };
 
   document.getElementById('status').textContent =
