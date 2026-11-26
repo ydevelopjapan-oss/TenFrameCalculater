@@ -254,7 +254,7 @@ button:active { transform: scale(.96); }
   <button onclick="key('7')">7</button>
   <button onclick="key('8')">8</button>
   <button onclick="key('9')">9</button>
-  <button onclick="clearAnswer()">消</button>
+  <button onclick="clearAnswer()">AC</button>
   <button onclick="key('0')">0</button>
   <button onclick="backspace()">⌫</button>
 </div>
@@ -273,11 +273,16 @@ const angles = [72,144,216,288,0];
 
 // 計算問題
 let problem = {
-  left: 4,
-  right: 9
+  left: 0,
+  right: 0
 };
 
-let answerNumber = problem.left + problem.right;
+let answerNumber = 0;
+
+let phase = 'left';
+let leftEntry = '';
+let rightEntry = '';
+let answerEntry = '';
 
 // 数字に応じて花びらを配置する
 function createFlowers(number, leftName, rightName) {
@@ -298,61 +303,50 @@ function createFlowers(number, leftName, rightName) {
 
   return flowers;
 }
-function startGame() {
-  const left = Number(
-    document.getElementById('leftNumber').value
+
+// 左右それぞれの花壇を作る
+let flowers = {
+  ...createFlowers(0, 'B', 'A'),
+  ...createFlowers(0, 'D', 'C')
+};
+
+let finished = false;
+
+function updateCalculatorDisplay() {
+  const displayArea = document.getElementById('displayArea');
+
+  document.getElementById('leftDisplay').textContent =
+    leftEntry;
+
+  document.getElementById('rightDisplay').textContent =
+    rightEntry;
+
+  document.getElementById('answerDisplay').textContent =
+    answerEntry;
+
+  displayArea.classList.toggle(
+    'answer-mode',
+    phase === 'answer' || phase === 'done'
   );
+}
 
-  const right = Number(
-    document.getElementById('rightNumber').value
-  );
+function updateOperandFlowers() {
+  problem.left = Number(leftEntry || 0);
+  problem.right = Number(rightEntry || 0);
 
-  if (
-    !Number.isInteger(left) ||
-    !Number.isInteger(right) ||
-    left < 0 || left > 9 ||
-    right < 0 || right > 9
-  ) {
-    alert('0〜9の数を入力してね');
-    return;
-  }
-
-  problem = { left, right };
-  answerNumber = left + right;
+  answerNumber = problem.left + problem.right;
 
   flowers = {
     ...createFlowers(problem.left, 'B', 'A'),
     ...createFlowers(problem.right, 'D', 'C')
   };
 
-  finished = false;
-  pendingTransfer = null;
-  underTenDestination = null;
-
-  document.getElementById('answer').value = '';
-  document.getElementById('result').style.display = 'none';
-  document.getElementById('tree').innerHTML = '';
-  document.getElementById('equal').disabled = false;
-
-  document.getElementById('problem').textContent =
-    `${problem.left} ＋ ${problem.right}`;
-
-  document.getElementById('status').textContent =
-    '答えを考えてみよう！';
-
   render();
-
-  document.getElementById('setup').style.display = 'none';
-  document.getElementById('game').style.display = 'block';
+  updateCalculatorDisplay();
 }
-// 左右それぞれの花壇を作る
-let flowers = {
-  ...createFlowers(problem.left, 'B', 'A'),
-  ...createFlowers(problem.right, 'D', 'C')
-};
 
-
-let finished = false;
+// 最初の数式表示
+updateOperandFlowers();
 
 function point(n) {
   const rad = angles[n-1] * Math.PI / 180;
