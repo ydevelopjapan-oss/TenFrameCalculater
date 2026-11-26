@@ -1303,46 +1303,6 @@ function resetCalculator() {
 
   updateOperandFlowers();
 }
-function clearAnswer() {
-  document.getElementById('answer').value='';
-}
-function backspace() {
-  const input = document.getElementById('answer');
-  input.value=input.value.slice(0,-1);
-}
-
-document.getElementById('equal').onclick = function() {
-  if(finished) return;
-
-  const answer = document.getElementById('answer').value;
-  const status = document.getElementById('status');
-
-  if(answer !== '') {
-    if(Number(answer) === answerNumber) {
-      finished = true;
-      status.textContent='正解！すごい！';
-      showResult();
-    } else {
-      status.textContent='もう一度考えてみよう！';
-    }
-    return;
-  }
-
-  status.textContent='花びらが集まるよ…';
-  this.disabled=true;
-
-
-setTimeout(async () => {
-  const transfer = prepareRandomTransfer();
-
-  if (transfer) {
-    await animateTransfer(transfer);
-  } else {
-    document.getElementById('equal').disabled = false;
-  }
-}, 2000);
-
-};
 
 // 5＋6用：花全体を移動する関数
 function animation56() {
