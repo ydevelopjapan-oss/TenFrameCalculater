@@ -391,10 +391,6 @@ function draw(name) {
 function render() {
   ['A','B','C','D'].forEach(draw);
 }
-render();
-document.getElementById('problem').textContent =
-  `${problem.left} ＋ ${problem.right}`;
-
 
 // 左右の花壇の花びらの合計を調べる
 function getGardenCounts() {
@@ -477,8 +473,6 @@ function getTransferCandidates() {
 
   return candidates;
 }
-
-
 
 // 成立するパターンから移動方法を選ぶ
 function chooseTransferPlan() {
@@ -769,8 +763,6 @@ function buildTransferResult(selection) {
     moves
   };
 }
-
-
 
 let pendingTransfer = null;
 // 10未満のとき、最終的に花びらを集める花壇
@@ -1093,7 +1085,6 @@ status.textContent = '移動できたよ！';
 document.getElementById('equal').disabled = false;
 }
 
-
 // 右側の10枚を左へ、残りの花びらを右へ移す
 async function moveTenToLeft() {
   const status = document.getElementById('status');
@@ -1192,10 +1183,125 @@ async function moveTenToLeft() {
   showResult(true);
 }
 
+// 数字キー
 function key(n) {
-  if(finished) return;
-  const input = document.getElementById('answer');
-  input.value = (input.value+n).slice(0,2);
+  if (finished) return;
+
+  if (phase === 'left') {
+    leftEntry = (leftEntry + n).slice(0, 1);
+    updateOperandFlowers();
+    return;
+  }
+
+  if (phase === 'right') {
+    rightEntry = (rightEntry + n).slice(0, 1);
+    updateOperandFlowers();
+    return;
+  }
+
+  if (phase === 'answer') {
+    answerEntry = (answerEntry + n).slice(0, 2);
+    updateCalculatorDisplay();
+  }
+}
+
+// ＋ボタン
+function pressPlus() {
+  if (finished || phase !== 'left') return;
+  if (leftEntry === '') return;
+
+  phase = 'right';
+  updateCalculatorDisplay();
+}
+
+// ACボタン
+function clearAnswer() {
+  if (finished) {
+    resetCalculator();
+    return;
+  }
+
+  if (phase === 'left') {
+    leftEntry = '';
+    updateOperandFlowers();
+  } else if (phase === 'right') {
+    rightEntry = '';
+    updateOperandFlowers();
+  } else if (phase === 'answer') {
+    answerEntry = '';
+    updateCalculatorDisplay();
+  }
+}
+
+// 1文字削除
+function backspace() {
+  if (finished) return;
+
+  if (phase === 'left') {
+    leftEntry = leftEntry.slice(0, -1);
+    updateOperandFlowers();
+  } else if (phase === 'right') {
+    rightEntry = rightEntry.slice(0, -1);
+    updateOperandFlowers();
+  } else if (phase === 'answer') {
+    answerEntry = answerEntry.slice(0, -1);
+    updateCalculatorDisplay();
+  }
+}
+
+// 計算開始
+document.getElementById('equal').onclick = function() {
+  if (finished || phase !== 'right') return;
+  if (rightEntry === '') return;
+
+  // 答え入力モードへ
+  phase = 'answer';
+  answerEntry = '';
+
+  updateCalculatorDisplay();
+
+  document.getElementById('equal').disabled = true;
+  document.getElementById('plus').disabled = true;
+
+  document.getElementById('status').textContent =
+    '答えを入力してみよう！';
+
+  // 2秒後に花びらの移動を開始
+  setTimeout(async () => {
+    const transfer = prepareRandomTransfer();
+
+    if (transfer) {
+      await animateTransfer(transfer);
+    }
+  }, 2000);
+};
+
+// 計算を最初からやり直す
+function resetCalculator() {
+  phase = 'left';
+  leftEntry = '';
+  rightEntry = '';
+  answerEntry = '';
+
+  problem = {
+    left: 0,
+    right: 0
+  };
+
+  answerNumber = 0;
+  finished = false;
+  pendingTransfer = null;
+  underTenDestination = null;
+
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('tree').innerHTML = '';
+  document.getElementById('status').textContent =
+    '左の数を入力してね！';
+
+  document.getElementById('equal').disabled = false;
+  document.getElementById('plus').disabled = false;
+
+  updateOperandFlowers();
 }
 function clearAnswer() {
   document.getElementById('answer').value='';
@@ -1366,9 +1472,17 @@ function showResult(showTree = answerNumber === 10) {
   const tree = document.getElementById('tree');
 
   finished = true;
+  phase = 'done';
+
+  // 入力した答えを正解に置き換える
+  answerEntry = String(answerNumber);
+  updateCalculatorDisplay();
 
   document.getElementById('resultText').textContent =
-    `${problem.left} ＋ ${problem.right} ＝ ${answerNumber}`;
+    '正解！';
+
+  document.getElementById('equal').disabled = true;
+  document.getElementById('plus').disabled = true;
 
   // 木を出さない場合
   if (!showTree) {
