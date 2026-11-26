@@ -1268,12 +1268,15 @@ document.getElementById('equal').onclick = function() {
 
   // 2秒後に花びらの移動を開始
   setTimeout(async () => {
-    const transfer = prepareRandomTransfer();
+  const transfer = prepareRandomTransfer();
 
-    if (transfer) {
-      await animateTransfer(transfer);
-    }
-  }, 2000);
+  alert('移動計画：' + (transfer ? '作成成功' : '作成失敗'));
+
+  if (transfer) {
+    alert('アニメーション開始');
+    await animateTransfer(transfer);
+  }
+}, 2000);
 };
 
 // 計算を最初からやり直す
