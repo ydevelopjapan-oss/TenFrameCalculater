@@ -15,6 +15,83 @@ body {
 }
 h1 { color: #d878a0; font-size: 25px; }
 .problem { font-size: 38px; font-weight: bold; margin: 20px; }
+#calculator {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.display-area {
+  width: 100%;
+  margin: 18px auto 8px;
+}
+
+.equation-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  min-height: 58px;
+  font-size: 38px;
+  font-weight: bold;
+}
+
+.equation-row span {
+  text-align: center;
+  min-width: 0;
+}
+
+#operatorDisplay {
+  font-size: 30px;
+}
+
+#answerDisplay {
+  display: none;
+  min-height: 58px;
+  font-size: 44px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 58px;
+}
+
+.answer-mode .equation-row {
+  min-height: 28px;
+  font-size: 19px;
+}
+
+.answer-mode #operatorDisplay {
+  font-size: 18px;
+}
+
+.answer-mode .equation-row::after {
+  content: "＝";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 19px;
+}
+
+.answer-mode #answerDisplay {
+  display: block;
+}
+
+.operation-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 14px auto;
+}
+
+.operation-buttons button {
+  width: 110px;
+}
+
+.keys {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 260px;
+}
 .flower { width: 100%; max-width: 100px; }
 .name { font-weight: bold; }
 .count { font-size: 13px; color: #b18b9e; }
@@ -123,24 +200,19 @@ button:active { transform: scale(.96); }
 <body>
 
 <h1>🌸 さくらの計算機 🌸</h1>
-<div id="setup">
-  <p>好きな数を入力してね</p>
+<div id="calculator">
 
-  <div>
-    <input id="leftNumber" type="number"
-      min="0" max="9" value="4">
-    ＋
-    <input id="rightNumber" type="number"
-      min="0" max="9" value="9">
+  <div class="display-area" id="displayArea">
+    <div class="equation-row">
+      <span id="leftDisplay"></span>
+      <span id="operatorDisplay">＋</span>
+      <span id="rightDisplay"></span>
+    </div>
+
+    <div id="answerDisplay"></div>
   </div>
 
-  <button onclick="startGame()">計算スタート</button>
-</div>
-<div id="game" style="display:none">
-<div class="problem" id="problem"></div>
-
-<div class="garden">
-
+  <div class="garden">
   <!-- 左の花壇：B・A -->
   <div class="bed bed-left">
     <div class="flower">
@@ -167,8 +239,8 @@ button:active { transform: scale(.96); }
 
 </div>
 
-<div class="controls">
-  <input id="answer" inputmode="numeric" placeholder="答え">
+<div class="operation-buttons">
+  <button id="plus" onclick="pressPlus()">＋</button>
   <button id="equal">＝</button>
 </div>
 
