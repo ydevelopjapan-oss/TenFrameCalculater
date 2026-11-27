@@ -456,10 +456,8 @@ function getTransferCandidates() {
   // 右Cの完成した花を左Bへ移す
   if (
     flowers.A.length === 5 &&
-    flowers.B.length > 0 &&
     flowers.B.length < 5 &&
     flowers.C.length === 5 &&
-    flowers.D.length > 0 &&
     flowers.D.length < 5
   ) {
     candidates.push({
@@ -474,19 +472,21 @@ function getTransferCandidates() {
   return candidates;
 }
 
-// 成立するパターンから移動方法を選ぶ
-function chooseTransferPlan() {
-  const { left, right } = getGardenCounts();
-
-  // 通常は成立するパターンからランダムに選ぶ
+function chooseTransferPlan(forcedPattern = null) {
   const candidates = getTransferCandidates();
 
-  if (candidates.length === 0) {
+  const available = forcedPattern === null
+    ? candidates
+    : candidates.filter(
+        candidate => candidate.pattern === forcedPattern
+      );
+
+  if (available.length === 0) {
     return null;
   }
 
-  const index = Math.floor(Math.random() * candidates.length);
-  return candidates[index];
+  const index = Math.floor(Math.random() * available.length);
+  return available[index];
 }
 
 function createTransferSelection(plan) {
@@ -809,7 +809,7 @@ function chooseUnderTenPlan() {
     moveCount
   };
 }
-function prepareRandomTransfer() {
+function prepareRandomTransfer(forcedPattern = null) {
   // ① 移動パターンを選ぶ
 if (
   answerNumber < 10 &&
@@ -821,7 +821,7 @@ if (
 
 const plan = answerNumber < 10
   ? chooseUnderTenPlan()
-  : chooseTransferPlan();
+  : chooseTransferPlan(forcedPattern);
 
   if (!plan) {
     document.getElementById('status').textContent =
@@ -1062,7 +1062,10 @@ if (
 ) {
   status.textContent = '右の花を左へ移すよ！';
 
-  const nextTransfer = prepareRandomTransfer();
+  const nextTransfer =
+    transfer.plan.pattern === 4
+      ? prepareRandomTransfer(5)
+      : prepareRandomTransfer();
 
   if (nextTransfer) {
     await animateTransfer(nextTransfer);
@@ -1270,10 +1273,7 @@ document.getElementById('equal').onclick = function() {
   setTimeout(async () => {
   const transfer = prepareRandomTransfer();
 
-  alert('移動計画：' + (transfer ? '作成成功' : '作成失敗'));
-
   if (transfer) {
-    alert('アニメーション開始');
     await animateTransfer(transfer);
   }
 }, 2000);
